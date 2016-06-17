@@ -17,34 +17,37 @@ class TestConstants(unittest.TestCase) :
          variables:
             float var1(dim1) ;
                var1:att1 = "dummy attribute" ;
+            float var2(dim1) ;
+               var2:_FillValue = 9.f ;
          // global attributes
             :c1 = "foo" ;      // with spaces
             :c2="bar" ;        // w/o spaces
-         
+
             :byte1 = 123b ;
             :byte2 = 'a' ;     // 97
             :byte3 = '\n' ;    // 10
-         
+
             :short1 = 1234s ;
             :short2 = -888s ;
             :short3 = 0xFFs ;  // 255
             :short4 = 077s ;   // 63
-         
+
             :int1 = -56789 ;
             :int2 = 123456 ;
             :int3 = 0666 ;     // 438
             :int4 = 0x2F ;     // 47
             :iarray = 1, 2, 3, 4 ;
-         
+
             :float1 = 123.0f ;
             :float2 = 0.2718e1f ;
             :farray = 1.0f, 2.0f, 3.0f ;
-         
+
             :double1 = 3.14159d ;
             :double2 = 0.010203 ;
             :darray = 1.0, 2.0, 3.0 ;
          data:
             var1 = 1.0f, 2.0f, _ ;
+            var2 = 1.0f, 9.0f, _ ;
       }"""
       parser = cdlparser.CDL3Parser()
       self.tmpfile = tempfile.mkstemp(suffix='.nc')[1]
@@ -111,21 +114,34 @@ class TestConstants(unittest.TestCase) :
 
    def test_dimensions(self) :
       self.assertTrue(len(self.dataset.dimensions) == 1)
-      self.assertTrue(self.dataset.dimensions.keys()[0] == "dim1")
+      self.assertTrue("dim1" in self.dataset.dimensions.keys())
       dim = self.dataset.dimensions['dim1']
       self.assertTrue(len(dim) == 3)
 
    def test_variables(self) :
-      self.assertTrue(len(self.dataset.variables) == 1)
-      self.assertTrue(self.dataset.variables.keys()[0] == "var1")
+      self.assertTrue(len(self.dataset.variables) == 2)
+      self.assertTrue("var1" in self.dataset.variables.keys())
       var = self.dataset.variables['var1']
       self.assertTrue(var.att1 == "dummy attribute")
-      data = var[:]
-      self.assertTrue(np.ma.isMA(data))
+      data = var[...]
+      self.assertFalse(np.ma.isMA(data))
       self.assertTrue(len(data) == 3)
       self.assertTrue(data[0] == np.float32(1.0))
       self.assertTrue(data[1] == np.float32(2.0))
-      self.assertTrue(data[2] is np.ma.masked)
+      var = self.dataset.variables['var2']
+      self.assertTrue(var._FillValue == np.float32(9.0))
+      data = var[...]
+      self.assertTrue(var._FillValue == 9.)
+      self.assertTrue(np.ma.isMA(var[...]))
+      self.assertTrue(len(var) == 3)
+      self.assertTrue(data.data[0] == np.float32(1.0))
+      self.assertTrue(data[0] == np.float32(1.0))
+      self.assertTrue(data.data[1] == var._FillValue)
+      self.assertTrue(data[1].__class__ == np.ma.core.MaskedConstant)
+      self.assertTrue(data.mask[1] == True)
+      self.assertTrue(data.data[2] == var._FillValue)
+      self.assertTrue(data[2].__class__ == np.ma.core.MaskedConstant)
+      self.assertTrue(data.mask[2] == True)
 
 #---------------------------------------------------------------------------------------------------
 if __name__ == '__main__':

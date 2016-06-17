@@ -50,7 +50,7 @@ class TestCharVars(unittest.TestCase) :
 
    def test_scalar_variables(self) :
       var = self.dataset.variables['letter']
-      self.assertTrue(var[:] == "X")
+      self.assertTrue(var[:] == b"X")
 
    def test_non_scalar_variables(self) :
       var = self.dataset.variables['regcodes']
@@ -66,29 +66,29 @@ class TestCharVars(unittest.TestCase) :
       self.assertTrue(var.shape == (3,10))
       data = var[:]
       data = nc4.chartostring(data)
-      self.assertTrue(data[0].startswith("Europe"))
-      self.assertTrue(data[1].startswith("Americas"))
-      self.assertTrue(data[2].startswith("Asia"))
+      self.assertTrue(data[0].startswith(b"Europe"))
+      self.assertTrue(data[1].startswith(b"Americas"))
+      self.assertTrue(data[2].startswith(b"Asia"))
 
       var = self.dataset.variables['digits']
       self.assertTrue(var.long_name == "decimal digits")
       self.assertTrue(var.shape == (10,))
       data = var[:]
       data = nc4.chartostring(data)
-      self.assertTrue(data == "0123456789")
+      self.assertTrue(data == b"0123456789")
 
       var = self.dataset.variables['dna_code']
       self.assertTrue(var.long_name == "DNA code")
       self.assertTrue(var.shape == (2,3,4))
       data = var[:]
       sample = nc4.chartostring(data[0])
-      self.assertTrue(sample[0] == "ACTG")
-      self.assertTrue(sample[1] == "ACGG")
-      self.assertTrue(sample[2] == "ATGC")
+      self.assertTrue(sample[0] == b"ACTG")
+      self.assertTrue(sample[1] == b"ACGG")
+      self.assertTrue(sample[2] == b"ATGC")
       sample = nc4.chartostring(data[1])
-      self.assertTrue(sample[0] == "CTGA")
-      self.assertTrue(sample[1] == "GCTA")
-      self.assertTrue(sample[2] == "TGCA")
+      self.assertTrue(sample[0] == b"CTGA")
+      self.assertTrue(sample[1] == b"GCTA")
+      self.assertTrue(sample[2] == b"TGCA")
 
 #---------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
